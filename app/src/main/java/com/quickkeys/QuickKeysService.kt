@@ -1,9 +1,12 @@
 package com.quickkeys
 
+import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.Typeface
+import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.GradientDrawable
 import android.inputmethodservice.InputMethodService
+import android.view.Gravity
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.Button
@@ -15,31 +18,45 @@ class QuickKeysService : InputMethodService() {
     companion object {
         const val PREFS = "quickkeys_prefs"
         const val COUNT = "button_count"
-        private const val WHATSAPP_PACKAGE = "com.whatsapp"
+        const val BACKGROUND_URI = "background_uri"
+        const val APP_NAME = "𝐋𝐞𝐨𝐫𝐝𝐨𝐮 ⃟⛧"
     }
 
-    override fun onCreateInputView(): View = createKeyboardView(null)
+    override fun onCreateInputView(): View = createKeyboardView()
 
     override fun onStartInputView(info: EditorInfo, restarting: Boolean) {
         super.onStartInputView(info, restarting)
-        setInputView(createKeyboardView(info.packageName))
+        setInputView(createKeyboardView())
     }
 
-    private fun createKeyboardView(packageName: String?): View {
+    private fun createKeyboardView(): View {
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(12, 12, 12, 12)
-            setBackgroundColor(Color.rgb(16, 16, 16))
+            setPadding(12, 10, 12, 10)
+            setBackgroundColor(Color.BLACK)
         }
+        val prefs = getSharedPreferences(PREFS, MODE_PRIVATE)
+        val imageUri = prefs.getString(BACKGROUND_URI, null)
+        if (!imageUri.isNullOrBlank()) {
+            try {
+                contentResolver.openInputStream(android.net.Uri.parse(imageUri))?.use { stream ->
+                    val bitmap = BitmapFactory.decodeStream(stream)
+                    if (bitmap != null) root.background = BitmapDrawable(resources, bitmap).apply {
+                        gravity = Gravity.FILL
+                    }
+                }
+            } catch (_: Exception) { }
+        }
+
         root.addView(TextView(this).apply {
-            text = "QuickKeys"
-            textSize = 18f
+            text = APP_NAME
+            textSize = 19f
             setTextColor(Color.WHITE)
             typeface = Typeface.DEFAULT_BOLD
-            setPadding(4, 4, 4, 12)
+            setShadowLayer(4f, 1f, 1f, Color.BLACK)
+            setPadding(5, 3, 5, 9)
         })
 
-        val prefs = getSharedPreferences(PREFS, MODE_PRIVATE)
         val count = prefs.getInt(COUNT, 4).coerceIn(1, 10)
         var row = newRow()
         repeat(count) { i ->
@@ -48,16 +65,18 @@ class QuickKeysService : InputMethodService() {
                 text = phrase.takeIf { it.isNotBlank() } ?: "زر " + (i + 1)
                 textSize = 16f
                 isAllCaps = false
+                maxLines = 3
+                gravity = Gravity.CENTER
                 setTextColor(Color.WHITE)
+                setShadowLayer(2f, 1f, 1f, Color.BLACK)
                 background = GradientDrawable().apply {
-                    setColor(Color.rgb(42, 42, 42))
-                    setStroke(2, Color.rgb(150, 150, 150))
+                    setColor(Color.argb(220, 38, 38, 38))
+                    setStroke(2, Color.rgb(165, 165, 165))
                     cornerRadius = 14f
                 }
-                minHeight = (if (resources.configuration.smallestScreenWidthDp >= 600) 64 else 52)
-                setOnClickListener { insertPhrase(phrase, packageName == WHATSAPP_PACKAGE) }
+                setOnClickListener { insertPhrase(phrase) }
             }
-            row.addView(button, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply {
+            row.addView(button, LinearLayout.LayoutParams(0, dp(82), 1f).apply {
                 setMargins(5, 5, 5, 5)
             })
             if ((i + 1) % 2 == 0 || i == count - 1) {
@@ -66,12 +85,13 @@ class QuickKeysService : InputMethodService() {
             }
         }
         root.addView(Button(this).apply {
-            text = "إعدادات QuickKeys"
+            text = "❖ 𝐒𝐘𝐒𝐓𝐄𝐌 ❖"
+            textSize = 16f
             isAllCaps = false
             setTextColor(Color.WHITE)
             background = GradientDrawable().apply {
-                setColor(Color.rgb(55, 55, 55))
-                setStroke(2, Color.rgb(150, 150, 150))
+                setColor(Color.argb(230, 45, 45, 45))
+                setStroke(2, Color.LTGRAY)
                 cornerRadius = 12f
             }
             setOnClickListener {
@@ -83,22 +103,22 @@ class QuickKeysService : InputMethodService() {
         return root
     }
 
+    private fun dp(value: Int) = (value * resources.displayMetrics.density).toInt()
+
     private fun newRow() = LinearLayout(this).apply {
         orientation = LinearLayout.HORIZONTAL
     }
 
-    private fun insertPhrase(phrase: String, shouldSend: Boolean) {
+    private fun insertPhrase(phrase: String) {
         if (phrase.isBlank()) {
-            Toast.makeText(this, "اكتب العبارة أولًا من إعدادات QuickKeys.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "اكتب العبارة أولًا من الإعدادات.", Toast.LENGTH_SHORT).show()
             return
         }
         val connection = currentInputConnection ?: return
         connection.commitText(phrase, 1)
-        if (shouldSend) {
-            val sent = connection.performEditorAction(EditorInfo.IME_ACTION_SEND)
-            if (!sent) {
-                Toast.makeText(this, "تم إدراج النص. اضغط إرسال في واتساب.", Toast.LENGTH_LONG).show()
-            }
+        val sent = connection.performEditorAction(EditorInfo.IME_ACTION_SEND)
+        if (!sent) {
+            Toast.makeText(this, "تم إدراج النص. قد تحتاج للضغط على إرسال داخل التطبيق.", Toast.LENGTH_LONG).show()
         }
     }
 }
