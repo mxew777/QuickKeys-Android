@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
         android:allowBackup="true"
+        android:icon="@drawable/leordou_icon"
+        android:roundIcon="@drawable/leordou_icon"
         android:label="𝐋𝐞𝐨𝐫𝐝𝐨𝐮 ⃟⛧"
         android:supportsRtl="true"
         android:theme="@android:style/Theme.Material.NoActionBar">
