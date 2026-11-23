@@ -16,12 +16,27 @@ class QuickKeysService : InputMethodService() {
     }
 
     override fun onCreateInputView(): View {
+        // The editor info may not be available yet here. Build the correct
+        // view again in onStartInputView(), when Android supplies it.
+        return createKeyboardView(null)
+    }
+
+    override fun onStartInputView(info: EditorInfo, restarting: Boolean) {
+        super.onStartInputView(info, restarting)
+        setInputView(createKeyboardView(info.packageName))
+    }
+
+    private fun createKeyboardView(packageName: String?): View {
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(8, 8, 8, 8)
         }
-        root.addView(TextView(this).apply { text = "QuickKeys"; textSize = 16f })
-        if (currentInputEditorInfo?.packageName != WHATSAPP_PACKAGE) {
+        root.addView(TextView(this).apply {
+            text = "QuickKeys"
+            textSize = 16f
+        })
+
+        if (packageName != WHATSAPP_PACKAGE) {
             root.addView(TextView(this).apply {
                 text = "افتح واتساب لاستخدام أزرار QuickKeys."
                 textSize = 14f
@@ -48,7 +63,7 @@ class QuickKeysService : InputMethodService() {
         root.addView(Button(this).apply {
             text = "إعدادات QuickKeys"
             setOnClickListener {
-                val intent = packageManager.getLaunchIntentForPackage(packageName)
+                val intent = packageManager.getLaunchIntentForPackage(packageName = this@QuickKeysService.packageName)
                 intent?.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
                 if (intent != null) startActivity(intent)
             }
@@ -56,7 +71,9 @@ class QuickKeysService : InputMethodService() {
         return root
     }
 
-    private fun newRow() = LinearLayout(this).apply { orientation = LinearLayout.HORIZONTAL }
+    private fun newRow() = LinearLayout(this).apply {
+        orientation = LinearLayout.HORIZONTAL
+    }
 
     private fun insertAndSend(phrase: String) {
         if (phrase.isBlank()) {
@@ -66,6 +83,8 @@ class QuickKeysService : InputMethodService() {
         val connection = currentInputConnection ?: return
         connection.commitText(phrase, 1)
         val sent = connection.performEditorAction(EditorInfo.IME_ACTION_SEND)
-        if (!sent) Toast.makeText(this, "تم إدراج النص. اضغط إرسال في واتساب.", Toast.LENGTH_LONG).show()
+        if (!sent) {
+            Toast.makeText(this, "تم إدراج النص. اضغط إرسال في واتساب.", Toast.LENGTH_LONG).show()
+        }
     }
 }
