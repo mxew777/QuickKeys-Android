@@ -65,10 +65,16 @@ class QuickKeysService : InputMethodService() {
                 text = phrase.takeIf { it.isNotBlank() } ?: "زر " + (i + 1)
                 textSize = 16f
                 isAllCaps = false
-                maxLines = 3
+                maxLines = 4
+                includeFontPadding = false
                 gravity = Gravity.CENTER
                 setTextColor(Color.WHITE)
                 setShadowLayer(2f, 1f, 1f, Color.BLACK)
+                if (android.os.Build.VERSION.SDK_INT >= 26) {
+                    setAutoSizeTextTypeUniformWithConfiguration(
+                        8, 16, 1, android.util.TypedValue.COMPLEX_UNIT_SP
+                    )
+                }
                 background = GradientDrawable().apply {
                     setColor(Color.argb(220, 38, 38, 38))
                     setStroke(2, Color.rgb(165, 165, 165))
