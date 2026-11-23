@@ -61,20 +61,18 @@ class QuickKeysService : InputMethodService() {
         var row = newRow()
         repeat(count) { i ->
             val phrase = prefs.getString("phrase_" + i, "").orEmpty()
-            val button = Button(this).apply {
+            val phraseView = TextView(this).apply {
                 text = phrase.takeIf { it.isNotBlank() } ?: "زر " + (i + 1)
                 textSize = 16f
-                isAllCaps = false
-                maxLines = 4
-                includeFontPadding = false
-                gravity = Gravity.CENTER
                 setTextColor(Color.WHITE)
                 setShadowLayer(2f, 1f, 1f, Color.BLACK)
-                if (android.os.Build.VERSION.SDK_INT >= 26) {
-                    setAutoSizeTextTypeUniformWithConfiguration(
-                        8, 16, 1, android.util.TypedValue.COMPLEX_UNIT_SP
-                    )
-                }
+                gravity = Gravity.CENTER
+                includeFontPadding = false
+                maxLines = 4
+                ellipsize = android.text.TextUtils.TruncateAt.END
+                setLineSpacing(0f, 1.0f)
+                isClickable = true
+                isFocusable = true
                 background = GradientDrawable().apply {
                     setColor(Color.argb(220, 38, 38, 38))
                     setStroke(2, Color.rgb(165, 165, 165))
@@ -82,11 +80,13 @@ class QuickKeysService : InputMethodService() {
                 }
                 setOnClickListener { insertPhrase(phrase) }
             }
-            row.addView(button, LinearLayout.LayoutParams(0, dp(82), 1f).apply {
+            row.addView(phraseView, LinearLayout.LayoutParams(0, dp(82), 1f).apply {
                 setMargins(5, 5, 5, 5)
             })
             if ((i + 1) % 2 == 0 || i == count - 1) {
-                root.addView(row)
+                root.addView(row, LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT, dp(92)
+                ))
                 row = newRow()
             }
         }
@@ -113,6 +113,7 @@ class QuickKeysService : InputMethodService() {
 
     private fun newRow() = LinearLayout(this).apply {
         orientation = LinearLayout.HORIZONTAL
+        gravity = Gravity.CENTER_VERTICAL
     }
 
     private fun insertPhrase(phrase: String) {
