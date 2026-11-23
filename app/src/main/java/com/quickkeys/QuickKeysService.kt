@@ -63,7 +63,7 @@ class QuickKeysService : InputMethodService() {
         root.addView(Button(this).apply {
             text = "إعدادات QuickKeys"
             setOnClickListener {
-                val intent = packageManager.getLaunchIntentForPackage(packageName = this@QuickKeysService.packageName)
+                val intent = packageManager.getLaunchIntentForPackage(this@QuickKeysService.packageName)
                 intent?.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
                 if (intent != null) startActivity(intent)
             }
