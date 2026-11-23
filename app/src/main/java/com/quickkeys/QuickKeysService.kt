@@ -1,5 +1,8 @@
 package com.quickkeys
 
+import android.graphics.Color
+import android.graphics.Typeface
+import android.graphics.drawable.GradientDrawable
 import android.inputmethodservice.InputMethodService
 import android.view.View
 import android.view.inputmethod.EditorInfo
@@ -15,11 +18,7 @@ class QuickKeysService : InputMethodService() {
         private const val WHATSAPP_PACKAGE = "com.whatsapp"
     }
 
-    override fun onCreateInputView(): View {
-        // The editor info may not be available yet here. Build the correct
-        // view again in onStartInputView(), when Android supplies it.
-        return createKeyboardView(null)
-    }
+    override fun onCreateInputView(): View = createKeyboardView(null)
 
     override fun onStartInputView(info: EditorInfo, restarting: Boolean) {
         super.onStartInputView(info, restarting)
@@ -29,32 +28,38 @@ class QuickKeysService : InputMethodService() {
     private fun createKeyboardView(packageName: String?): View {
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(8, 8, 8, 8)
+            setPadding(12, 12, 12, 12)
+            setBackgroundColor(Color.rgb(16, 16, 16))
         }
         root.addView(TextView(this).apply {
             text = "QuickKeys"
-            textSize = 16f
+            textSize = 18f
+            setTextColor(Color.WHITE)
+            typeface = Typeface.DEFAULT_BOLD
+            setPadding(4, 4, 4, 12)
         })
-
-        if (packageName != WHATSAPP_PACKAGE) {
-            root.addView(TextView(this).apply {
-                text = "افتح واتساب لاستخدام أزرار QuickKeys."
-                textSize = 14f
-            })
-            return root
-        }
 
         val prefs = getSharedPreferences(PREFS, MODE_PRIVATE)
         val count = prefs.getInt(COUNT, 4).coerceIn(1, 10)
         var row = newRow()
         repeat(count) { i ->
             val phrase = prefs.getString("phrase_" + i, "").orEmpty()
-            row.addView(Button(this).apply {
+            val button = Button(this).apply {
                 text = phrase.takeIf { it.isNotBlank() } ?: "زر " + (i + 1)
-                textSize = 12f
+                textSize = 16f
                 isAllCaps = false
-                setOnClickListener { insertAndSend(phrase) }
-            }, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
+                setTextColor(Color.WHITE)
+                background = GradientDrawable().apply {
+                    setColor(Color.rgb(42, 42, 42))
+                    setStroke(2, Color.rgb(150, 150, 150))
+                    cornerRadius = 14f
+                }
+                minHeight = (if (resources.configuration.smallestScreenWidthDp >= 600) 64 else 52)
+                setOnClickListener { insertPhrase(phrase, packageName == WHATSAPP_PACKAGE) }
+            }
+            row.addView(button, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply {
+                setMargins(5, 5, 5, 5)
+            })
             if ((i + 1) % 2 == 0 || i == count - 1) {
                 root.addView(row)
                 row = newRow()
@@ -62,6 +67,13 @@ class QuickKeysService : InputMethodService() {
         }
         root.addView(Button(this).apply {
             text = "إعدادات QuickKeys"
+            isAllCaps = false
+            setTextColor(Color.WHITE)
+            background = GradientDrawable().apply {
+                setColor(Color.rgb(55, 55, 55))
+                setStroke(2, Color.rgb(150, 150, 150))
+                cornerRadius = 12f
+            }
             setOnClickListener {
                 val intent = packageManager.getLaunchIntentForPackage(this@QuickKeysService.packageName)
                 intent?.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -75,16 +87,18 @@ class QuickKeysService : InputMethodService() {
         orientation = LinearLayout.HORIZONTAL
     }
 
-    private fun insertAndSend(phrase: String) {
+    private fun insertPhrase(phrase: String, shouldSend: Boolean) {
         if (phrase.isBlank()) {
             Toast.makeText(this, "اكتب العبارة أولًا من إعدادات QuickKeys.", Toast.LENGTH_SHORT).show()
             return
         }
         val connection = currentInputConnection ?: return
         connection.commitText(phrase, 1)
-        val sent = connection.performEditorAction(EditorInfo.IME_ACTION_SEND)
-        if (!sent) {
-            Toast.makeText(this, "تم إدراج النص. اضغط إرسال في واتساب.", Toast.LENGTH_LONG).show()
+        if (shouldSend) {
+            val sent = connection.performEditorAction(EditorInfo.IME_ACTION_SEND)
+            if (!sent) {
+                Toast.makeText(this, "تم إدراج النص. اضغط إرسال في واتساب.", Toast.LENGTH_LONG).show()
+            }
         }
     }
 }
