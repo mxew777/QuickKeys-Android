@@ -95,8 +95,8 @@ class QuickKeysService : InputMethodService() {
     }
 
     private fun buildTypingKeyboard(root: LinearLayout) {
-        val numbers = if (symbols) listOf("!","@","#","$","%","^","&","*","(",")").reversed()
-            else listOf("١","٢","٣","٤","٥","٦","٧","٨","٩","٠").reversed()
+        val numbers = if (symbols) listOf("!","@","#","$","%","^","&","*","(",")")
+            else listOf("١","٢","٣","٤","٥","٦","٧","٨","٩","٠")
         addKeyRow(root, numbers, dp(49))
 
         if (english && !symbols) {
@@ -104,9 +104,9 @@ class QuickKeysService : InputMethodService() {
             addKeyRow(root, "asdfghjkl".map { it.toString() } + listOf("⌫"), dp(53))
             addKeyRow(root, listOf("⇧") + "zxcvbnm".map { it.toString() } + listOf("↵"), dp(53))
         } else if (!english && !symbols) {
-            addKeyRow(root, listOf("⌫") + "ضصثقفغعهخحج".map { it.toString() }.reversed(), dp(53))
+            addKeyRow(root, "ضصثقفغعهخحج".map { it.toString() } + listOf("⌫"), dp(53))
             addKeyRow(root, "شسيبلاتنمكط".map { it.toString() }.reversed(), dp(53))
-            addKeyRow(root, listOf(".","،") + "ذءؤرىةوزظد".map { it.toString() }.reversed() + listOf("⇧"), dp(53))
+            addKeyRow(root, listOf("⇧") + "ذءؤرىةوزظد".map { it.toString() } + listOf("،", "."), dp(53))
         } else {
             addKeyRow(root, listOf("@","#","$","%","&","-","+","(",")","/"), dp(53))
             addKeyRow(root, listOf("*","\"","'",":",";","!","?","⌫"), dp(53))
