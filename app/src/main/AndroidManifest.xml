@@ -4,7 +4,7 @@
         android:allowBackup="true"
         android:icon="@drawable/leordou_icon"
         android:roundIcon="@drawable/leordou_icon"
-        android:label="𝐋𝐞𝐨𝐫𝐝𝐨𝐮 ⃟⛧"
+        android:label="&#x200E;𝐋𝐞𝐨𝐫𝐝𝐨𝐮 ⃟⛧&#x200E;"
         android:supportsRtl="true"
         android:theme="@android:style/Theme.Material.NoActionBar">
         <activity android:name=".MainActivity" android:exported="true">
@@ -15,7 +15,7 @@
         </activity>
         <service
             android:name=".QuickKeysService"
-            android:label="𝐋𝐞𝐨𝐫𝐝𝐨𝐮 ⃟⛧"
+            android:label="&#x200E;𝐋𝐞𝐨𝐫𝐝𝐨𝐮 ⃟⛧&#x200E;"
             android:permission="android.permission.BIND_INPUT_METHOD"
             android:exported="true">
             <intent-filter><action android:name="android.view.InputMethod" /></intent-filter>
