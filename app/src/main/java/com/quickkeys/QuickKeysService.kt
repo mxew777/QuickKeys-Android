@@ -95,8 +95,8 @@ class QuickKeysService : InputMethodService() {
     }
 
     private fun buildTypingKeyboard(root: LinearLayout) {
-        val numbers = if (symbols) listOf("!","@","#","$","%","^","&","*","(",")","Del")
-            else listOf("١","٢","٣","٤","٥","٦","٧","٨","٩","٠","Del")
+        val numbers = if (symbols) listOf("!","@","#","$","%","^","&","*","(",")").reversed().reversed()
+            else listOf("١","٢","٣","٤","٥","٦","٧","٨","٩","٠").reversed()
         addKeyRow(root, numbers, dp(49))
 
         if (english && !symbols) {
@@ -104,9 +104,9 @@ class QuickKeysService : InputMethodService() {
             addKeyRow(root, "asdfghjkl".map { it.toString() } + listOf("⌫"), dp(53))
             addKeyRow(root, listOf("⇧") + "zxcvbnm".map { it.toString() } + listOf("↵"), dp(53))
         } else if (!english && !symbols) {
-            addKeyRow(root, "ضصثقفغعهخحج".map { it.toString() } + listOf("⌫"), dp(53))
-            addKeyRow(root, "شسيبلاتنمكط".map { it.toString() } + listOf("↵"), dp(53))
-            addKeyRow(root, listOf("⇧") + "ذءؤرىةوزظد".map { it.toString() } + listOf("،", "."), dp(53))
+            addKeyRow(root, listOf("⌫") + "ضصثقفغعهخحج".map { it.toString() }.reversed(), dp(53))
+            addKeyRow(root, "شسيبلاتنمكط".map { it.toString() }.reversed(), dp(53))
+            addKeyRow(root, listOf(".","،") + "ذءؤرىةوزظد".map { it.toString() }.reversed() + listOf("⇧"), dp(53))
         } else {
             addKeyRow(root, listOf("@","#","$","%","&","-","+","(",")","/"), dp(53))
             addKeyRow(root, listOf("*","\"","'",":",";","!","?","⌫"), dp(53))
@@ -125,7 +125,10 @@ class QuickKeysService : InputMethodService() {
             symbols = !symbols
             setInputView(createKeyboardView())
         })
-        addBottom(SPACE_LABEL, 5.4f, { currentInputConnection?.commitText(" ", 1) }, 12f)
+        addBottom("⛩", 0.9f, action = {
+            typingMode = false
+            setInputView(createKeyboardView())
+        })
         addBottom("🌐", 0.85f, action = {
             english = !english
             symbols = false
@@ -134,10 +137,7 @@ class QuickKeysService : InputMethodService() {
         })
         addBottom("‹", 0.75f, action = { currentInputConnection?.sendKeyEvent(android.view.KeyEvent(android.view.KeyEvent.ACTION_DOWN, android.view.KeyEvent.KEYCODE_DPAD_LEFT)) })
         addBottom("›", 0.75f, action = { currentInputConnection?.sendKeyEvent(android.view.KeyEvent(android.view.KeyEvent.ACTION_DOWN, android.view.KeyEvent.KEYCODE_DPAD_RIGHT)) })
-        addBottom("⏆", 0.9f, action = {
-            typingMode = false
-            setInputView(createKeyboardView())
-        })
+        addBottom(SPACE_LABEL, 5.4f, { currentInputConnection?.commitText(" ", 1) }, 12f)
         root.addView(bottom, LinearLayout.LayoutParams(-1, dp(59)))
     }
 
