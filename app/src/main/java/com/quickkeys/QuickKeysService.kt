@@ -105,7 +105,7 @@ class QuickKeysService : InputMethodService() {
             addKeyRow(root, listOf("⇧") + "zxcvbnm".map { it.toString() } + listOf("↵"), dp(53))
         } else if (!english && !symbols) {
             addKeyRow(root, "ضصثقفغعهخحج".map { it.toString() } + listOf("⌫"), dp(53))
-            addKeyRow(root, "شسيبلاتنمكط".map { it.toString() }, dp(53))
+            addKeyRow(root, "شسيبلاتنمكط".map { it.toString() } + listOf("↵"), dp(53))
             addKeyRow(root, listOf("⇧") + "ذءؤرىةوزظد".map { it.toString() } + listOf("،", "."), dp(53))
         } else {
             addKeyRow(root, listOf("@","#","$","%","&","-","+","(",")","/"), dp(53))
