@@ -109,7 +109,7 @@ class QuickKeysService : InputMethodService() {
             addKeyRow(root, listOf("⇧") + "ذءؤرىةوزظد".map { it.toString() } + listOf("،", "."), dp(53))
         } else {
             addKeyRow(root, listOf("@","#","$","%","&","-","+","(",")","/"), dp(53))
-            addKeyRow(root, listOf("*","\"","' ",":",";","!","?","⌫"), dp(53))
+            addKeyRow(root, listOf("*","\"","'",":",";","!","?","⌫"), dp(53))
             addKeyRow(root, listOf("⇧","=","_","\\","[","]","{","}","↵"), dp(53))
         }
 
@@ -120,24 +120,24 @@ class QuickKeysService : InputMethodService() {
                     setMargins(dp(2), dp(3), dp(2), dp(3))
                 })
         }
-        addBottom("Ctrl", 0.9f) { currentInputConnection?.commitText("", 1) }
-        addBottom(if (symbols) "ABC" else "!#1", 0.9f) {
+        addBottom("Ctrl", 0.9f, action = { currentInputConnection?.commitText("", 1) })
+        addBottom(if (symbols) "ABC" else "!#1", 0.9f, action = {
             symbols = !symbols
             setInputView(createKeyboardView())
-        }
+        })
         addBottom(SPACE_LABEL, 5.4f, { currentInputConnection?.commitText(" ", 1) }, 12f)
-        addBottom("🌐", 0.85f) {
+        addBottom("🌐", 0.85f, action = {
             english = !english
             symbols = false
             shifted = false
             setInputView(createKeyboardView())
-        }
-        addBottom("‹", 0.75f) { currentInputConnection?.commitText("", 1) }
-        addBottom("›", 0.75f) { currentInputConnection?.commitText("", 1) }
-        addBottom("⏆", 0.9f) {
+        })
+        addBottom("‹", 0.75f, action = { currentInputConnection?.sendKeyEvent(android.view.KeyEvent(android.view.KeyEvent.ACTION_DOWN, android.view.KeyEvent.KEYCODE_DPAD_LEFT)) })
+        addBottom("›", 0.75f, action = { currentInputConnection?.sendKeyEvent(android.view.KeyEvent(android.view.KeyEvent.ACTION_DOWN, android.view.KeyEvent.KEYCODE_DPAD_RIGHT)) })
+        addBottom("⏆", 0.9f, action = {
             typingMode = false
             setInputView(createKeyboardView())
-        }
+        })
         root.addView(bottom, LinearLayout.LayoutParams(-1, dp(59)))
     }
 
