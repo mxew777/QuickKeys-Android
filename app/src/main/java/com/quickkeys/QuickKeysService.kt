@@ -19,6 +19,7 @@ class QuickKeysService : InputMethodService() {
         const val COUNT = "button_count"
         const val BACKGROUND_URI = "background_uri"
         const val APP_NAME = "𝐋𝐞𝐨𝐫𝐝𝐨𝐮 ⃟⛧"
+        private const val SPACE_LABEL = "───━━━━━⪻⛧⪼━━━━━───"
     }
 
     private var typingMode = false
@@ -36,6 +37,7 @@ class QuickKeysService : InputMethodService() {
     private fun createKeyboardView(): View {
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
+            layoutDirection = View.LAYOUT_DIRECTION_LTR
             setPadding(dp(8), dp(7), dp(8), dp(7))
             setBackgroundColor(Color.BLACK)
         }
@@ -93,50 +95,61 @@ class QuickKeysService : InputMethodService() {
     }
 
     private fun buildTypingKeyboard(root: LinearLayout) {
-        val numberRow = if (symbols) listOf("1","2","3","4","5","6","7","8","9","0","⌫")
-            else listOf("١","٢","٣","٤","٥","٦","٧","٨","٩","٠","⌫")
-        addKeyRow(root, numberRow, dp(49))
-        val rows = if (symbols) {
-            listOf(listOf("@","#","$","%","&","-","+","(",")","/"),
-                listOf("*","\"","'",":",";","!","?","⌫"))
-        } else if (english) {
-            listOf("qwertyuiop".map { it.toString() },
-                "asdfghjkl".map { it.toString() },
-                listOf("⇧") + "zxcvbnm".map { it.toString() } + listOf("⌫"))
+        val numbers = if (symbols) listOf("!","@","#","$","%","^","&","*","(",")","Del")
+            else listOf("١","٢","٣","٤","٥","٦","٧","٨","٩","٠","Del")
+        addKeyRow(root, numbers, dp(49))
+
+        if (english && !symbols) {
+            addKeyRow(root, "qwertyuiop".map { it.toString() }, dp(53))
+            addKeyRow(root, "asdfghjkl".map { it.toString() } + listOf("⌫"), dp(53))
+            addKeyRow(root, listOf("⇧") + "zxcvbnm".map { it.toString() } + listOf("↵"), dp(53))
+        } else if (!english && !symbols) {
+            addKeyRow(root, "ضصثقفغعهخحج".map { it.toString() } + listOf("⌫"), dp(53))
+            addKeyRow(root, "شسيبلاتنمكط".map { it.toString() } + listOf("↵"), dp(53))
+            addKeyRow(root, listOf("⇧") + "ذءؤرىةوزظد".map { it.toString() } + listOf("،", "."), dp(53))
         } else {
-            listOf("ضصثقفغعهخحج".map { it.toString() },
-                "شسيبلاتنمكط".map { it.toString() },
-                listOf("⇧") + "ذءؤرىةوزظد".map { it.toString() } + listOf("،", ".", "⌫"))
+            addKeyRow(root, listOf("@","#","$","%","&","-","+","(",")","/"), dp(53))
+            addKeyRow(root, listOf("*","\"","' ",":",";","!","?","⌫"), dp(53))
+            addKeyRow(root, listOf("⇧","=","_","\\","[","]","{","}","↵"), dp(53))
         }
-        rows.forEach { addKeyRow(root, it, dp(53)) }
 
         val bottom = newRow()
-        fun addBottom(label: String, weight: Float, action: () -> Unit) {
-            bottom.addView(actionKey(label, 15f, action),
+        fun addBottom(label: String, weight: Float, action: () -> Unit, size: Float = 15f) {
+            bottom.addView(actionKey(label, size, action),
                 LinearLayout.LayoutParams(0, dp(53), weight).apply {
                     setMargins(dp(2), dp(3), dp(2), dp(3))
                 })
         }
-        addBottom(if (symbols) "ABC" else "?123", 1.05f) { symbols = !symbols; setInputView(createKeyboardView()) }
-        addBottom("␠", 1.2f) { currentInputConnection?.commitText(" ", 1) }
-        addBottom("⏆ 𝐒𝐖𝐈𝐓𝐂𝐇 ⏆", 3.4f) {
-            typingMode = false
+        addBottom("Ctrl", 0.9f) { currentInputConnection?.commitText("", 1) }
+        addBottom(if (symbols) "ABC" else "!#1", 0.9f) {
+            symbols = !symbols
             setInputView(createKeyboardView())
         }
-        addBottom(if (english) "🌐 EN" else "🌐 ع", 1.15f) {
+        addBottom(SPACE_LABEL, 5.4f, { currentInputConnection?.commitText(" ", 1) }, 12f)
+        addBottom("🌐", 0.85f) {
             english = !english
+            symbols = false
             shifted = false
             setInputView(createKeyboardView())
         }
-        addBottom("↵", 1.0f) { sendEnter() }
+        addBottom("‹", 0.75f) { currentInputConnection?.commitText("", 1) }
+        addBottom("›", 0.75f) { currentInputConnection?.commitText("", 1) }
+        addBottom("⏆", 0.9f) {
+            typingMode = false
+            setInputView(createKeyboardView())
+        }
         root.addView(bottom, LinearLayout.LayoutParams(-1, dp(59)))
     }
 
     private fun addKeyRow(root: LinearLayout, keys: List<String>, height: Int) {
         val row = newRow()
         keys.forEach { key ->
-            row.addView(actionKey(key, 20f) { handleKey(key) },
-                LinearLayout.LayoutParams(0, height, 1f).apply {
+            val weight = when (key) {
+                "Del", "⌫", "↵", "⇧" -> 1.35f
+                else -> 1f
+            }
+            row.addView(actionKey(key, if (key == "Del") 15f else 20f) { handleKey(key) },
+                LinearLayout.LayoutParams(0, height, weight).apply {
                     setMargins(dp(2), dp(3), dp(2), dp(3))
                 })
         }
@@ -144,12 +157,15 @@ class QuickKeysService : InputMethodService() {
     }
 
     private fun handleKey(key: String) {
+        val connection = currentInputConnection ?: return
         when (key) {
-            "⌫" -> currentInputConnection?.deleteSurroundingText(1, 0)
+            "Del" -> connection.deleteSurroundingText(0, 1)
+            "⌫" -> connection.deleteSurroundingText(1, 0)
+            "↵" -> sendEnter()
             "⇧" -> { shifted = !shifted; setInputView(createKeyboardView()) }
             else -> {
                 val value = if (english && shifted) key.uppercase() else key
-                currentInputConnection?.commitText(value, 1)
+                connection.commitText(value, 1)
                 if (shifted) { shifted = false; setInputView(createKeyboardView()) }
             }
         }
@@ -161,9 +177,7 @@ class QuickKeysService : InputMethodService() {
         if (action == EditorInfo.IME_ACTION_SEND || action == EditorInfo.IME_ACTION_GO ||
             action == EditorInfo.IME_ACTION_DONE || action == EditorInfo.IME_ACTION_SEARCH) {
             connection.performEditorAction(action!!)
-        } else {
-            connection.commitText("\n", 1)
-        }
+        } else connection.commitText("\n", 1)
     }
 
     private fun insertPhrase(phrase: String) {
@@ -200,6 +214,7 @@ class QuickKeysService : InputMethodService() {
 
     private fun newRow() = LinearLayout(this).apply {
         orientation = LinearLayout.HORIZONTAL
+        layoutDirection = View.LAYOUT_DIRECTION_LTR
         gravity = Gravity.CENTER_VERTICAL
     }
 }
