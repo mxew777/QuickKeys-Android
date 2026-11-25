@@ -95,7 +95,7 @@ class QuickKeysService : InputMethodService() {
     }
 
     private fun buildTypingKeyboard(root: LinearLayout) {
-        val numbers = if (symbols) listOf("!","@","#","$","%","^","&","*","(",")").reversed().reversed()
+        val numbers = if (symbols) listOf("!","@","#","$","%","^","&","*","(",")").reversed()
             else listOf("١","٢","٣","٤","٥","٦","٧","٨","٩","٠").reversed()
         addKeyRow(root, numbers, dp(49))
 
